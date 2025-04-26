@@ -1,4 +1,5 @@
 🤖 Mão Robótica Jokenpô
+
 Este projeto é inspirado no mao-robotica-mediapipe criado por WellingtonDev25.
 (https://github.com/WellingtonDev25/mao-robotica-mediapipe)
 
