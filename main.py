@@ -48,19 +48,19 @@ def desenhar_pontos(img, landmarks):
 def classificar_gesto(pontos):
     global MODO_HARD    
 
-    minimo_fechado = status_dedo(pontos, 20)
-    anelar_fechado = status_dedo(pontos, 16)
-    medio_fechado = status_dedo(pontos, 12)
-    indicador_fechado = status_dedo(pontos, 8)
+    minimo = status_dedo(pontos, 20)
+    anelar = status_dedo(pontos, 16)
+    medio = status_dedo(pontos, 12)
+    indicador = status_dedo(pontos, 8)
 
-    if minimo_fechado and anelar_fechado and not medio_fechado and indicador_fechado:
+    if not minimo and not anelar and medio and not indicador:
         MODO_HARD = True
         return Gesto.DEDO_MEDIO
-    elif anelar_fechado and minimo_fechado and indicador_fechado and medio_fechado:
+    elif not anelar and not minimo and not indicador and not medio:
         return Gesto.PEDRA
-    elif anelar_fechado and minimo_fechado and not indicador_fechado and not medio_fechado:
+    elif not anelar and not minimo and indicador and medio:
         return Gesto.TESOURA
-    elif not anelar_fechado and not minimo_fechado and not indicador_fechado and not medio_fechado:
+    elif anelar and minimo and indicador and medio:
         return Gesto.PAPEL
     else:
         return Gesto.DESCONHECIDO
@@ -73,7 +73,7 @@ def status_dedo(pontos, index):
     distancia = distancia_euclidiana(pontos[0][0],pontos[0][1],pontos[index][0],pontos[index][1])
     distanciaMetacarpo = distancia_euclidiana(pontos[5][0],pontos[5][1],pontos[17][0],pontos[17][1])
     razaoDistancia = round(distancia/distanciaMetacarpo, 2)
-    status = razaoDistancia <= DIST_DEDO_FECHADO
+    status = razaoDistancia >= DIST_DEDO_FECHADO
     return status
 
 def gesto_maquina(gesto_jogador):
