@@ -10,7 +10,7 @@ from constantes import Gesto
 MAX_FRAMES_PARADO = 10
 MOVIMENTO_LIMIAR = 10
 DIST_POLEGAR_FECHADO = 80
-DIST_DEDO_FECHADO = 70
+DIST_DEDO_FECHADO = 2
 LARGURA_CAM = 640
 ALTURA_CAM = 480
 MODO_HARD = False
@@ -48,16 +48,10 @@ def desenhar_pontos(img, landmarks):
 def classificar_gesto(pontos):
     global MODO_HARD    
 
-    dist_indicador = distancia_euclidiana(pontos[0][0],pontos[0][1],pontos[8][0],pontos[8][1])
-    dist_medio = distancia_euclidiana(pontos[0][0],pontos[0][1],pontos[12][0],pontos[12][1])
-    dist_anelar = distancia_euclidiana(pontos[0][0],pontos[0][1],pontos[16][0],pontos[16][1])
-    dist_minimo = distancia_euclidiana(pontos[0][0],pontos[0][1],pontos[20][0],pontos[20][1])
-
-    minimo_fechado = dist_minimo <= DIST_DEDO_FECHADO
-    anelar_fechado = dist_anelar <= DIST_DEDO_FECHADO
-    indicador_fechado = dist_indicador <= DIST_DEDO_FECHADO
-    medio_fechado = dist_medio <= DIST_DEDO_FECHADO
-
+    minimo_fechado = status_dedo(pontos, 20)
+    anelar_fechado = status_dedo(pontos, 16)
+    medio_fechado = status_dedo(pontos, 12)
+    indicador_fechado = status_dedo(pontos, 8)
 
     if minimo_fechado and anelar_fechado and not medio_fechado and indicador_fechado:
         MODO_HARD = True
@@ -74,6 +68,13 @@ def classificar_gesto(pontos):
 def distancia_euclidiana(x1, y1, x2, y2):
     distancia = round(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
     return distancia
+
+def status_dedo(pontos, index):
+    distancia = distancia_euclidiana(pontos[0][0],pontos[0][1],pontos[index][0],pontos[index][1])
+    distanciaMetacarpo = distancia_euclidiana(pontos[5][0],pontos[5][1],pontos[17][0],pontos[17][1])
+    razaoDistancia = round(distancia/distanciaMetacarpo, 2)
+    status = razaoDistancia <= DIST_DEDO_FECHADO
+    return status
 
 def gesto_maquina(gesto_jogador):
     global MODO_HARD
@@ -119,8 +120,6 @@ def main():
         if landmarks:
             desenhar_pontos(img, landmarks)
             pontos = extrair_pontos(landmarks[0], img)
-            ind = distancia_euclidiana(pontos[8][0],pontos[8][1],pontos[0][0],pontos[0][1])
-            print(ind)
             if pontos:
                 x_atual = pontos[0][0]
                 if prevX is not None:
