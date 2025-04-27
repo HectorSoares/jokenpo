@@ -71,9 +71,9 @@ def distancia_euclidiana(x1, y1, x2, y2):
 
 def status_dedo(pontos, index):
     distancia = distancia_euclidiana(pontos[0][0],pontos[0][1],pontos[index][0],pontos[index][1])
-    distanciaMetacarpo = distancia_euclidiana(pontos[5][0],pontos[5][1],pontos[17][0],pontos[17][1])
-    razaoDistancia = round(distancia/distanciaMetacarpo, 2)
-    status = razaoDistancia >= DIST_DEDO_FECHADO
+    distancia_metacarpo = distancia_euclidiana(pontos[5][0],pontos[5][1],pontos[17][0],pontos[17][1])
+    razao_distancia = round(distancia/distancia_metacarpo, 2)
+    status = razao_distancia >= DIST_DEDO_FECHADO
     return status
 
 def gesto_maquina(gesto_jogador):
@@ -104,9 +104,9 @@ def comparar(gesto_jogador, gesto_bot):
 # --- Execução principal ---
 def main():
     cap = configurar_camera()
-    prevX = None
+    x_prev = None
     movendo = False
-    framesParado = 0
+    frames_parado = 0
     ultimo_gesto = ""
     gesto_bot = ""
     resultado = ""
@@ -122,14 +122,14 @@ def main():
             pontos = extrair_pontos(landmarks[0], img)
             if pontos:
                 x_atual = pontos[0][0]
-                if prevX is not None:
-                    deslocamento = abs(x_atual - prevX)
+                if x_prev is not None:
+                    deslocamento = abs(x_atual - x_prev)
                     if deslocamento > MOVIMENTO_LIMIAR:
                         movendo = True
-                        framesParado = 0
+                        frames_parado = 0
                     elif movendo:
-                        framesParado += 1
-                        if framesParado > MAX_FRAMES_PARADO:
+                        frames_parado += 1
+                        if frames_parado > MAX_FRAMES_PARADO:
                             
                             gesto_jogador = classificar_gesto(pontos)
                             if gesto_jogador != Gesto.DESCONHECIDO:
@@ -140,8 +140,8 @@ def main():
                                 print(f"Voce: {gesto_jogador} | Maquina: {gesto_bot} → {resultado}")
                                 ultimo_gesto = gesto_jogador
                             movendo = False
-                            framesParado = 0
-                prevX = x_atual
+                            frames_parado = 0
+                x_prev = x_atual
 
         # Mostrar resultado na tela
         if ultimo_gesto:
