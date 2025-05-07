@@ -3,8 +3,8 @@ import math
 import cv2
 import mediapipe as mp
 import random
-from interface_pygame import atualizar_tela, mover_robo
 from constantes import Gesto
+import esp32
 
 # --- Configurações gerais ---
 MAX_FRAMES_PARADO = 10
@@ -45,22 +45,23 @@ def desenhar_pontos(img, landmarks):
     for l in landmarks:
         mp_drawing.draw_landmarks(img, l, hands.HAND_CONNECTIONS)
 
-def classificar_gesto(pontos):
-    global MODO_HARD    
-
+def classificar_dedos(pontos):
     minimo = status_dedo(pontos, 20)
     anelar = status_dedo(pontos, 16)
     medio = status_dedo(pontos, 12)
     indicador = status_dedo(pontos, 8)
+    return minimo, anelar, medio, indicador
 
+def classificar_gesto(minimo, anelar, medio, indicador):
+    global MODO_HARD    
     if not minimo and not anelar and medio and not indicador:
         MODO_HARD = True
         return Gesto.DEDO_MEDIO
-    elif not anelar and not minimo and not indicador and not medio:
+    elif not anelar and not minimo and not indicador and not medio:        
         return Gesto.PEDRA
-    elif not anelar and not minimo and indicador and medio:
+    elif not anelar and not minimo and indicador and medio:        
         return Gesto.TESOURA
-    elif anelar and minimo and indicador and medio:
+    elif anelar and minimo and indicador and medio:        
         return Gesto.PAPEL
     else:
         return Gesto.DESCONHECIDO
@@ -74,7 +75,7 @@ def status_dedo(pontos, index):
     distancia_metacarpo = distancia_euclidiana(pontos[5][0],pontos[5][1],pontos[17][0],pontos[17][1])
     razao_distancia = round(distancia/distancia_metacarpo, 2)
     status = razao_distancia >= DIST_DEDO_FECHADO
-    return status
+    return int(status)
 
 def gesto_maquina(gesto_jogador):
     global MODO_HARD
@@ -94,9 +95,7 @@ def retorna_gesto_ganhador(gesto):
 def comparar(gesto_jogador, gesto_bot):
     if gesto_jogador == gesto_bot:
         return "EMPATE"
-    elif (gesto_jogador == Gesto.PEDRA and gesto_bot == Gesto.TESOURA) or \
-         (gesto_jogador == Gesto.TESOURA and gesto_bot == Gesto.PAPEL) or \
-         (gesto_jogador == Gesto.PAPEL and gesto_bot == Gesto.PEDRA):
+    elif (retorna_gesto_ganhador(gesto_bot) == gesto_jogador):
         return "VOCE GANHOU!"
     else:
         return "MAQUINA GANHOU!"
@@ -129,13 +128,12 @@ def main():
                         frames_parado = 0
                     elif movendo:
                         frames_parado += 1
-                        if frames_parado > MAX_FRAMES_PARADO:
-                            
-                            gesto_jogador = classificar_gesto(pontos)
+                        if frames_parado > MAX_FRAMES_PARADO:            
+                            minimo, anelar, medio, indicador = classificar_dedos(pontos)   
+                            gesto_jogador = classificar_gesto(minimo, anelar, medio, indicador)
                             if gesto_jogador != Gesto.DESCONHECIDO:
-                                print(MODO_HARD)
                                 gesto_bot = gesto_maquina(gesto_jogador)
-                                mover_robo(gesto_bot);
+                                esp32.moverRobo(gesto_bot.value)
                                 resultado = comparar(gesto_jogador, gesto_bot)
                                 print(f"Voce: {gesto_jogador} | Maquina: {gesto_bot} → {resultado}")
                                 ultimo_gesto = gesto_jogador
@@ -149,7 +147,6 @@ def main():
             cv2.putText(img, f"Maquina: {gesto_bot}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 230, 255), 2)
             cv2.putText(img, f"{resultado}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 50, 255), 3)
         
-        atualizar_tela(MODO_HARD)
         cv2.imshow('Pedra Papel Tesoura', img)
         if cv2.waitKey(1) & 0xFF == 27:  # Tecla ESC para sair
             break
