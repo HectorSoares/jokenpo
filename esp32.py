@@ -8,18 +8,8 @@ except serial.SerialException:
     print("Erro: Não foi possível abrir a porta COM4.")
     exit()
 
-def papel():
-    cmd = 'PAPEL\n'
-    esp32.write(cmd.encode())
-
-def tesoura():
-    cmd = 'TESOURA\n'
-    esp32.write(cmd.encode())
-
-def pedra():
-    cmd = 'PEDRA\n'
-    esp32.write(cmd.encode())
-
-def moverRobo(gesto):
-    cmd = gesto + '\n'
-    esp32.write(cmd.encode())
+def moverRobo(status_dedos):
+    comando = ''.join(str(d) for d in status_dedos) + '\n'
+    print(comando);
+    esp32.write(comando.encode())
+    esp32.flush()

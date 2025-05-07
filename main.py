@@ -50,7 +50,8 @@ def classificar_dedos(pontos):
     anelar = status_dedo(pontos, 16)
     medio = status_dedo(pontos, 12)
     indicador = status_dedo(pontos, 8)
-    return minimo, anelar, medio, indicador
+    polegar = 0
+    return minimo, anelar, medio, indicador, polegar
 
 def classificar_gesto(minimo, anelar, medio, indicador):
     global MODO_HARD    
@@ -129,7 +130,7 @@ def main():
                     elif movendo:
                         frames_parado += 1
                         if frames_parado > MAX_FRAMES_PARADO:            
-                            minimo, anelar, medio, indicador = classificar_dedos(pontos)   
+                            minimo, anelar, medio, indicador, polegar = classificar_dedos(pontos)   
                             gesto_jogador = classificar_gesto(minimo, anelar, medio, indicador)
                             if gesto_jogador != Gesto.DESCONHECIDO:
                                 gesto_bot = gesto_maquina(gesto_jogador)
