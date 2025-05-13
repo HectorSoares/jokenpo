@@ -20,7 +20,7 @@ void setup() {
   servoPolegar.attach(16, 500, 2400);
 
   servoAnelar.setPeriodHertz(50);
-  servoAnelar.attach(17, 500, 2400);
+  servoAnelar.attach(25, 500, 2400);
 
   servoIndicador.setPeriodHertz(50);
   servoIndicador.attach(19, 500, 2400);
@@ -34,27 +34,39 @@ void setup() {
 
 void loop() {
   if (Serial.available() > 0) {
-    c = Serial.read();
+    char c = Serial.read();
 
     if (c != '\n') {
       str[idx++] = c;
     } else {
-      str[idx] = '\0';
+      str[idx] = '\0';  // Finaliza a string
       idx = 0;
 
-      Serial.print("Received: ");
+      Serial.print("Recebido: ");
       Serial.println(str);
 
-      if (strcmp(str, "PEDRA") == 0) {
-        pedra();
-      } else if (strcmp(str, "TESOURA") == 0) {
-        tesoura();
-      } else if (strcmp(str, "PAPEL") == 0) {
-        papel();
-      } 
+      if (strlen(str) == 5) {
+        // A string representa o status dos dedos na ordem:
+        // mínimo, anelar, meio, indicador, polegar
+        int minimo_val    = str[0] - '0';
+        int anelar_val    = str[1] - '0';
+        int meio_val      = str[2] - '0';
+        int indicador_val = str[3] - '0';
+        int polegar_val   = str[4] - '0';
+
+        // Envia os valores para as funções dos dedos
+        minimo(minimo_val);
+        anelar(anelar_val);
+        meio(meio_val);
+        indicador(indicador_val);
+        polegar(polegar_val);
+      } else {
+        Serial.println("Formato inválido");
+      }
     }
   }
 }
+
 
 void pedra() {
     polegar(0);

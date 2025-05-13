@@ -10,6 +10,6 @@ except serial.SerialException:
 
 def moverRobo(status_dedos):
     comando = ''.join(str(d) for d in status_dedos) + '\n'
-    print(comando);
+    print(comando)
     esp32.write(comando.encode())
     esp32.flush()
